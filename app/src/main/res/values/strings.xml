@@ -2,4 +2,6 @@
     <string name="app_name">Drinkwater</string>
     <string name="hint_interval">Intervalo (min)</string>
     <string name="notify">Notificar</string>
+    <string name="error_interval">Digite o intervalo</string>
+    <string name="pause">Pausar</string>
 </resources>
