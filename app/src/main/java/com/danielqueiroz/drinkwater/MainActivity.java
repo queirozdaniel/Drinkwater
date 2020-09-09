@@ -1,17 +1,23 @@
 package com.danielqueiroz.drinkwater;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         btnNotify = findViewById(R.id.btn_notify);
         editMinutes = findViewById(R.id.edit_txt_number_interval);
@@ -76,6 +83,20 @@ public class MainActivity extends AppCompatActivity {
             editor.putInt("hour", hour);
             editor.putInt("minute", minute);
             editor.apply();
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+
+            Intent notificationIntent = new Intent(MainActivity.this, NotificationPublisher.class);
+            notificationIntent.putExtra(NotificationPublisher.KEY_NOTIFICATION, "Hora de beber água");
+            notificationIntent.putExtra(NotificationPublisher.KEY_NOTIFICATION_ID, 1);
+
+            PendingIntent broadcast = PendingIntent.getBroadcast(MainActivity.this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), interval * 60 * 1000, broadcast);
+
         } else {
             btnNotify.setText(R.string.notify);
             btnNotify.setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent));
@@ -89,9 +110,13 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
         }
 
+        Intent notificationIntent = new Intent(MainActivity.this, NotificationPublisher.class);
+        PendingIntent broadcast = PendingIntent.getBroadcast(MainActivity.this, 0, notificationIntent, 0);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(broadcast);
 
-        Toast.makeText(this,"hora: " + hour + ", munite: " + minute + ", interval: " + interval, Toast.LENGTH_LONG).show();
-        Log.i("TESTE", "hora: " + hour + ", munite: " + minute + ", interval: " + interval);
+        Toast.makeText(this,"hora: " + hour + ", minute: " + minute + ", interval: " + interval, Toast.LENGTH_LONG).show();
+        Log.i("TESTE", "hora: " + hour + ", minute: " + minute + ", interval: " + interval);
     }
 
 }
